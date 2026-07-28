@@ -20,7 +20,7 @@ from pydantic_ai.messages import (
     ToolReturnPart,
     UserPromptPart,
 )
-from pydantic_ai.models.openai import OpenAIResponsesModel
+from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.settings import ModelSettings
 from pydantic_ai_skills import SkillsToolset
@@ -42,13 +42,18 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-def _build_model(model_name: str) -> OpenAIResponsesModel:
-    """OpenAI-compatible deployment (OpenAI, DeepSeek, etc.)."""
+def _build_model(model_name: str) -> OpenAIModel:
+    """OpenAI-compatible deployment (OpenAI, DeepSeek, etc.).
+
+    Uses the Chat Completions API (NOT the Responses API) because most
+    OpenAI-compatible providers (DeepSeek, etc.) only implement
+    /v1/chat/completions.
+    """
     provider_kwargs = {"api_key": settings.OPENAI_API_KEY}
     base_url = getattr(settings, "OPENAI_BASE_URL", None)
     if base_url:
         provider_kwargs["base_url"] = base_url
-    return OpenAIResponsesModel(
+    return OpenAIModel(
         model_name or settings.AI_MODEL,
         provider=OpenAIProvider(**provider_kwargs),
     )
@@ -117,26 +122,21 @@ class AssistantAgent:
         model = _build_model(self.model_name)
 
         capabilities: list[Any] = [ReinjectSystemPrompt()]
-        if self.thinking_effort:
-            capabilities.append(Thinking(effort=self.thinking_effort))  # ty: ignore[invalid-argument-type]
+        # DeepSeek thinking mode requires extra_body={"thinking": {"type": "enabled"}}
+        # which pydantic-ai's generic Thinking() capability does not inject.
+        # Skip the generic Thinking capability; DeepSeek's native CoT is
+        # controlled at the model level via reasoning_effort when available.
+        if self.thinking_effort and "deepseek" not in self.model_name.lower():
+            capabilities.append(Thinking(effort=self.thinking_effort))
         # Local DuckDuckGo / fetch (the installed extras) — works uniformly across
         # all providers, unlike provider-native web search.
         if not self.deep_research:
             capabilities.append(WebSearch(native=False, local="duckduckgo"))
             capabilities.append(WebFetch(native=False, local=True))
 
-        # The unified ``Thinking()`` capability enables reasoning, but for the
-        # OpenAI Responses API it sets only the effort — not the *summary*
-        # field that controls whether the model streams reasoning summaries
-        # back to the client. Without ``openai_reasoning_summary`` set, the
-        # model reasons internally and we never see ThinkingPart events.
-        # ``openai_*``-prefixed fields on TypedDict settings are silently
-        # ignored by other providers, so this is safe to apply unconditionally.
         model_settings: ModelSettings = ModelSettings()
         if self.temperature is not None:
             model_settings["temperature"] = self.temperature
-        if self.thinking_effort:
-            model_settings["openai_reasoning_summary"] = "auto"  # type: ignore[typeddict-unknown-key]  # ty: ignore[invalid-key]
         toolsets: list[Any] = []
 
         skills_dir = Path(__file__).parent.parent.parent / "skills"
