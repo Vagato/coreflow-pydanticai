@@ -20,7 +20,7 @@ from pydantic_ai.messages import (
     ToolReturnPart,
     UserPromptPart,
 )
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.settings import ModelSettings
 from pydantic_ai_skills import SkillsToolset
@@ -42,7 +42,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-def _build_model(model_name: str) -> OpenAIModel:
+def _build_model(model_name: str) -> OpenAIChatModel:
     """OpenAI-compatible deployment (OpenAI, DeepSeek, etc.).
 
     Uses the Chat Completions API (NOT the Responses API) because most
@@ -53,7 +53,7 @@ def _build_model(model_name: str) -> OpenAIModel:
     base_url = getattr(settings, "OPENAI_BASE_URL", None)
     if base_url:
         provider_kwargs["base_url"] = base_url
-    return OpenAIModel(
+    return OpenAIChatModel(
         model_name or settings.AI_MODEL,
         provider=OpenAIProvider(**provider_kwargs),
     )
