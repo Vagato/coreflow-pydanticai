@@ -179,6 +179,7 @@ class AgentSession:
                 todo_capability=todo_cap,
                 subagent_capability=subagent_cap,
                 context_manager_capability=ctx_manager_cap,
+                hindsight_bank_id=str(self.user.id),
             )
             model_history = build_message_history(self.conversation_history)
             user_input = await self._build_multimodal_input(user_message, file_ids)

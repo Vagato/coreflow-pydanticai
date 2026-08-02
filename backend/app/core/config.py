@@ -164,6 +164,11 @@ class Settings(BaseSettings):
     CODE_EXECUTION_TIMEOUT_SECS: float = 10.0
     CODE_EXECUTION_MAX_MEMORY_MB: int = 256
 
+    # === Hindsight Long-Term Memory ===
+    HINDSIGHT_API_BASE: str = "https://hindsight-latest-et3t.onrender.com"
+    HINDSIGHT_API_KEY: str = ""
+    HINDSIGHT_ENABLED: bool = False
+
     ENABLE_DEEP_RESEARCH: bool = False
     DEEP_RESEARCH_MAX_TOKENS: int = 120_000
     DEEP_RESEARCH_COMPRESS_THRESHOLD: float = 0.8

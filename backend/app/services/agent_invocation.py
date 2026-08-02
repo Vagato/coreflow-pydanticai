@@ -113,7 +113,12 @@ class AgentInvocationService:
         # Settings → Integrations servers apply here too. Traffic with no mapped
         # account still gets the deployment-managed MCP_SERVERS.
         mcp_toolsets = await build_toolsets_for_user(kwargs.get("user_id"))
-        assistant = get_agent(model_name=model_name, extra_toolsets=mcp_toolsets)
+        user_id = kwargs.get("user_id")
+        assistant = get_agent(
+            model_name=model_name,
+            extra_toolsets=mcp_toolsets,
+            hindsight_bank_id=str(user_id) if user_id else None,
+        )
 
         model_history = build_message_history(history)
         deps = Deps(kb_collection_names=kwargs.get("kb_collection_names") or [])

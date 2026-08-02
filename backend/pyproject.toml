@@ -60,6 +60,8 @@ dependencies = [
     "subagents-pydantic-ai>=0.2.7",
     "summarization-pydantic-ai>=0.1.7",
     "cryptography>=44.0.0",
+    "hindsight-client>=0.8.6",
+    "hindsight-pydantic-ai>=0.4.20",
     "aiogram>=3.17,<4.0",
     "slack-sdk>=3.35.0",
 ]

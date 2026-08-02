@@ -41,6 +41,26 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+_hindsight_configured: bool = False
+
+
+def _ensure_hindsight_configured() -> None:
+    """Call ``configure()`` once so ``create_hindsight_tools()`` picks up
+    the API URL and key from global defaults."""
+    global _hindsight_configured
+    if _hindsight_configured:
+        return
+    if not settings.HINDSIGHT_ENABLED:
+        return
+    from hindsight_pydantic_ai import configure
+
+    configure(
+        hindsight_api_url=settings.HINDSIGHT_API_BASE,
+        api_key=settings.HINDSIGHT_API_KEY,
+    )
+    _hindsight_configured = True
+    logger.info("Hindsight configured: %s", settings.HINDSIGHT_API_BASE)
+
 
 def _build_model(model_name: str) -> OpenAIChatModel:
     """OpenAI-compatible deployment (OpenAI, DeepSeek, etc.).
@@ -96,12 +116,14 @@ class AssistantAgent:
         todo_capability: "TodoCapability | None" = None,
         subagent_capability: "SubAgentCapability | None" = None,
         context_manager_capability: "ContextManagerCapability | None" = None,
+        hindsight_bank_id: str | None = None,
     ):
         self.deep_research = deep_research
         self.todo_capability = todo_capability
         self.subagent_capability = subagent_capability
         self.context_manager_capability = context_manager_capability
         self.extra_toolsets = extra_toolsets or []
+        self.hindsight_bank_id = hindsight_bank_id
         self.model_name = model_name or settings.AI_MODEL
         # ``temperature`` stays ``None`` when caller didn't set it — don't fall
         # back to settings.AI_TEMPERATURE here. Reasoning/o-series models
@@ -146,6 +168,18 @@ class AssistantAgent:
         # MCP servers (deployment-managed + the user's Settings → Integrations
         # connections) resolved for this turn; see build_toolsets_for_user.
         toolsets.extend(self.extra_toolsets)
+
+        # Hindsight long-term memory — tools only, agent decides when to call
+        if settings.HINDSIGHT_ENABLED and self.hindsight_bank_id:
+            _ensure_hindsight_configured()
+            from hindsight_pydantic_ai import create_hindsight_tools
+
+            toolsets.append(
+                create_hindsight_tools(
+                    bank_id=self.hindsight_bank_id,
+                    include_reflect=False,
+                )
+            )
 
         if self.todo_capability is not None:
             capabilities.append(self.todo_capability)
@@ -355,6 +389,7 @@ def get_agent(
     todo_capability: "TodoCapability | None" = None,
     subagent_capability: "SubAgentCapability | None" = None,
     context_manager_capability: "ContextManagerCapability | None" = None,
+    hindsight_bank_id: str | None = None,
 ) -> AssistantAgent:
     return AssistantAgent(
         model_name=model_name,
@@ -365,6 +400,7 @@ def get_agent(
         todo_capability=todo_capability,
         subagent_capability=subagent_capability,
         context_manager_capability=context_manager_capability,
+        hindsight_bank_id=hindsight_bank_id,
     )
 
 
