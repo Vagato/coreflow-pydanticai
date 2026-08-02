@@ -567,12 +567,12 @@ class AgentSession:
             elif isinstance(tool_event, FunctionToolResultEvent):
                 tc = pending.get(tool_event.tool_call_id)
                 if tc is not None:
-                    tc["result"] = str(tool_event.result.content)
+                    tc["result"] = str(tool_event.content)
                 await send_event(
                     self.websocket,
                     "tool_result",
                     {
                         "tool_call_id": tool_event.tool_call_id,
-                        "content": str(tool_event.result.content),
+                        "content": str(tool_event.content),
                     },
                 )
