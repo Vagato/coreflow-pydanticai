@@ -160,6 +160,7 @@ class AssistantAgent:
         if self.temperature is not None:
             model_settings["temperature"] = self.temperature
         toolsets: list[Any] = []
+        tools: list[Any] = []
 
         skills_dir = Path(__file__).parent.parent.parent / "skills"
         if skills_dir.exists():
@@ -174,7 +175,7 @@ class AssistantAgent:
             _ensure_hindsight_configured()
             from hindsight_pydantic_ai import create_hindsight_tools
 
-            toolsets.append(
+            tools.extend(
                 create_hindsight_tools(
                     bank_id=self.hindsight_bank_id,
                     include_reflect=False,
@@ -195,6 +196,7 @@ class AssistantAgent:
             system_prompt=self.system_prompt,
             capabilities=capabilities,
             toolsets=toolsets,
+            tools=tools,
         )
 
         self._register_tools(agent)
