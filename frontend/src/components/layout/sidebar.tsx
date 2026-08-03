@@ -1,67 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { cn, isAppAdmin } from "@/lib/utils";
-import { APP_NAME, ROUTES } from "@/lib/constants";
-import { LayoutDashboard, MessageSquare, UserCircle, ShieldAlert } from "lucide-react";
-import { useSidebarStore, useAuthStore } from "@/stores";
+import { useSidebarStore } from "@/stores";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui";
+import { APP_NAME } from "@/lib/constants";
 
-const navigation = [
-  { nameKey: "dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
-  { nameKey: "chat", href: ROUTES.CHAT, icon: MessageSquare },
-  { nameKey: "profile", href: ROUTES.PROFILE, icon: UserCircle },
-];
-
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
-  const { user } = useAuthStore();
-  const t = useTranslations("nav");
-
-  return (
-    <nav className="flex-1 space-y-1 p-4">
-      {navigation.map((item) => {
-        const isActive = pathname === item.href;
-        return (
-          <Link
-            key={item.nameKey}
-            href={item.href}
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-              "min-h-[44px]",
-              isActive
-                ? "bg-secondary text-secondary-foreground"
-                : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground",
-            )}
-          >
-            <item.icon className="h-5 w-5" />
-            {t(item.nameKey)}
-          </Link>
-        );
-      })}
-      {isAppAdmin(user) && (
-        <Link
-          href={ROUTES.ADMIN}
-          onClick={onNavigate}
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
-            "min-h-[44px]",
-            pathname.startsWith("/admin")
-              ? "bg-secondary text-secondary-foreground"
-              : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground",
-          )}
-        >
-          <ShieldAlert className="h-5 w-5" />
-          Admin
-        </Link>
-      )}
-    </nav>
-  );
-}
-
+/**
+ * Main sidebar — currently unused (nav links moved to header).
+ * Kept as a minimal shell in case we add more items later.
+ */
 export function Sidebar() {
   const { isOpen, close } = useSidebarStore();
 
@@ -72,7 +18,6 @@ export function Sidebar() {
           <SheetTitle>{APP_NAME}</SheetTitle>
           <SheetClose onClick={close} />
         </SheetHeader>
-        <NavLinks onNavigate={close} />
       </SheetContent>
     </Sheet>
   );

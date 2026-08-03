@@ -40,7 +40,7 @@ import { useAuth } from "@/hooks";
 import { useActiveRoute } from "@/lib/active-route";
 import { APP_NAME, ROUTES } from "@/lib/constants";
 import { cn, isAppAdmin } from "@/lib/utils";
-import { useAuthStore, useSidebarStore } from "@/stores";
+import { useAuthStore, useChatSidebarStore } from "@/stores";
 
 type NavLeaf = { labelKey: string; href: string; icon: LucideIcon; descKey?: string };
 type NavEntry =
@@ -107,7 +107,7 @@ function NavMenu({ entry }: { entry: Extract<NavEntry, { kind: "menu" }> }) {
 export function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const avatarVersion = useAuthStore((s) => s.avatarVersion);
-  const { toggle } = useSidebarStore();
+  const { toggle } = useChatSidebarStore();
   const isActive = useActiveRoute();
   const t = useTranslations("nav");
   const tc = useTranslations("common");
@@ -137,7 +137,7 @@ export function Header() {
             <span className="hidden sm:inline">{APP_NAME}</span>
           </Link>
 
-          <nav className="hidden items-center gap-0.5 lg:flex">
+          <nav className="flex items-center gap-0.5">
             {NAV.filter((e) => !e.adminOnly || isAdmin).map((entry) =>
               entry.kind === "link" ? (
                 <Link
