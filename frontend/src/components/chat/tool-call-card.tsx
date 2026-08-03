@@ -195,7 +195,7 @@ export function ToolCallCard({ toolCall, defaultExpanded = false }: ToolCallCard
             toggleExpanded();
           }
         }}
-        className="hover:bg-foreground/[0.03] flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 text-left transition-colors"
+        className="hover:bg-foreground/[0.03] flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors sm:py-2"
       >
         <div className="flex min-w-0 items-center gap-2">
           <ToolIcon
@@ -259,7 +259,7 @@ export function ToolCallCard({ toolCall, defaultExpanded = false }: ToolCallCard
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "text-muted-foreground hover:bg-foreground/10 hover:text-foreground h-6 w-6 transition-colors",
+                  "text-muted-foreground hover:bg-foreground/10 hover:text-foreground h-8 w-8 transition-colors sm:h-6 sm:w-6",
                   showRaw && "text-primary",
                 )}
                 onClick={toggleRaw}

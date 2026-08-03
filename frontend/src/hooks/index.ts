@@ -8,3 +8,4 @@ export { useConversationShares } from "./use-conversation-shares";
 export { useAdminConversations } from "./use-admin-conversations";
 export { useSlashCommands, isBuiltinEnabled, BUILTIN_COMMAND_LIST } from "./use-slash-commands";
 export { useMcpConnections } from "./use-mcp-connections";
+export { useMediaQuery } from "./use-media-query";

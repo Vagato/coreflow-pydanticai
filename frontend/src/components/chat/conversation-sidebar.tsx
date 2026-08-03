@@ -60,7 +60,7 @@ function ConversationItem({
   return (
     <div
       className={cn(
-        "group relative flex min-h-[44px] cursor-pointer items-center gap-2 rounded-xl px-3 py-3 text-sm transition-all",
+        "group relative flex min-h-\[48px\] sm:min-h-\[44px\] cursor-pointer items-center gap-2 rounded-xl px-3 py-3 text-sm transition-all",
         isActive
           ? "bg-accent text-foreground border-border border"
           : "text-muted-foreground hover:bg-secondary/50 hover:text-secondary-foreground border border-transparent",
@@ -121,7 +121,7 @@ function ConversationItem({
             <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
             <div className="bg-popover absolute top-8 right-0 z-20 w-40 rounded-md border shadow-lg">
               <button
-                className="hover:bg-secondary flex min-h-[44px] w-full items-center gap-2 px-3 py-3 text-sm"
+                className="hover:bg-secondary flex min-h-\[48px\] sm:min-h-\[44px\] w-full items-center gap-2 px-3 py-3 text-sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsEditing(true);
@@ -132,7 +132,7 @@ function ConversationItem({
                 {t("rename")}
               </button>
               <button
-                className="hover:bg-secondary flex min-h-[44px] w-full items-center gap-2 px-3 py-3 text-sm"
+                className="hover:bg-secondary flex min-h-\[48px\] sm:min-h-\[44px\] w-full items-center gap-2 px-3 py-3 text-sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onShare();
@@ -144,7 +144,7 @@ function ConversationItem({
               </button>
               {conversation.is_archived ? (
                 <button
-                  className="hover:bg-secondary flex min-h-[44px] w-full items-center gap-2 px-3 py-3 text-sm"
+                  className="hover:bg-secondary flex min-h-\[48px\] sm:min-h-\[44px\] w-full items-center gap-2 px-3 py-3 text-sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     onUnarchive();
@@ -156,7 +156,7 @@ function ConversationItem({
                 </button>
               ) : (
                 <button
-                  className="hover:bg-secondary flex min-h-[44px] w-full items-center gap-2 px-3 py-3 text-sm"
+                  className="hover:bg-secondary flex min-h-\[48px\] sm:min-h-\[44px\] w-full items-center gap-2 px-3 py-3 text-sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     onArchive();
@@ -168,7 +168,7 @@ function ConversationItem({
                 </button>
               )}
               <button
-                className="text-destructive hover:bg-destructive/10 flex min-h-[44px] w-full items-center gap-2 px-3 py-3 text-sm"
+                className="text-destructive hover:bg-destructive/10 flex min-h-\[48px\] sm:min-h-\[44px\] w-full items-center gap-2 px-3 py-3 text-sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDelete();
@@ -242,7 +242,7 @@ function ConversationList({
         <button
           type="button"
           onClick={handleNewChat}
-          className="text-muted-foreground hover:text-foreground hover:bg-secondary flex h-9 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors"
+          className="text-muted-foreground hover:text-foreground hover:bg-secondary flex h-11 w-full items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors sm:h-9"
         >
           <SquarePen className="h-4 w-4 shrink-0" />
           {t("newChat")}
@@ -422,12 +422,15 @@ export function ConversationSidebar({ className }: ConversationSidebarProps) {
       </aside>
 
       <Sheet open={isOpen} onOpenChange={close}>
-        <SheetContent side="left" className="w-80 p-0">
-          <SheetHeader className="h-12 px-4">
-            <SheetTitle>{t("conversations")}</SheetTitle>
+        <SheetContent
+          side="left"
+          className="w-[calc(100vw-2rem)] max-w-80 p-0 [&>button]:top-3 [&>button]:right-3"
+        >
+          <SheetHeader className="border-b h-14 px-4 sm:h-12">
+            <SheetTitle className="text-base sm:text-sm">{t("conversations")}</SheetTitle>
             <SheetClose onClick={close} />
           </SheetHeader>
-          <div className="flex h-[calc(100%-48px)] flex-col">
+          <div className="flex h-[calc(100%-56px)] flex-col sm:h-[calc(100%-48px)]">
             <ConversationList {...listProps} onNavigate={close} />
           </div>
         </SheetContent>

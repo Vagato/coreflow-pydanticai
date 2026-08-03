@@ -99,65 +99,92 @@ export function SubagentPanel() {
   const isDone = subagent.status === "completed";
   const isFailed = subagent.status === "failed";
 
-  return (
-    <div className="bg-background border-border fixed top-0 right-0 z-50 flex h-full w-[400px] flex-col border-l shadow-xl">
-      {/* Header */}
-      <div className="border-foreground/8 flex items-start justify-between gap-3 border-b px-4 py-3">
-        <div className="flex min-w-0 flex-1 items-center gap-2.5">
-          {isRunning ? (
-            <Loader2 className="text-primary h-4 w-4 shrink-0 animate-spin" />
-          ) : isDone ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-          ) : isFailed ? (
-            <XCircle className="text-destructive h-4 w-4 shrink-0" />
-          ) : (
-            <Bot className="text-muted-foreground h-4 w-4 shrink-0" />
-          )}
-          <div className="min-w-0">
-            <p className="text-foreground truncate text-sm font-semibold">
-              {subagent.subagent_name}
-            </p>
-            <p className={cn("text-[11px] font-medium", statusStyle.color)}>{statusStyle.label}</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => setSelected(null)}
-          aria-label="Close subagent panel"
-          className="text-foreground/50 hover:text-foreground hover:bg-foreground/8 mt-0.5 shrink-0 rounded-md p-1 transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Description */}
-      <div className="border-foreground/8 border-b px-4 py-2.5">
-        <p className="text-foreground/60 text-xs leading-relaxed">{subagent.description}</p>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        {messages.length === 0 ? (
-          isRunning ? (
-            <div className="text-muted-foreground flex flex-col items-center gap-2 py-10 text-center">
-              <Loader2 className="text-primary h-8 w-8 animate-spin opacity-60" />
-              <p className="text-sm font-medium">Subagent is working…</p>
-              <p className="text-xs opacity-60">Messages will appear when the task progresses</p>
-            </div>
-          ) : (
-            <div className="text-muted-foreground flex flex-col items-center gap-2 py-10 text-center">
-              <MessageSquare className="h-8 w-8 opacity-30" />
-              <p className="text-sm">No messages captured</p>
-            </div>
-          )
+  const header = (
+    <div className="border-foreground/8 flex shrink-0 items-start justify-between gap-3 border-b px-4 py-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2.5">
+        {isRunning ? (
+          <Loader2 className="text-primary h-4 w-4 shrink-0 animate-spin" />
+        ) : isDone ? (
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+        ) : isFailed ? (
+          <XCircle className="text-destructive h-4 w-4 shrink-0" />
         ) : (
-          <div className="space-y-2">
-            {messages.map((msg, i) => (
-              <MessageRow key={`${msg.task_id}-${i}`} msg={msg} />
-            ))}
-          </div>
+          <Bot className="text-muted-foreground h-4 w-4 shrink-0" />
         )}
+        <div className="min-w-0">
+          <p className="text-foreground truncate text-sm font-semibold">
+            {subagent.subagent_name}
+          </p>
+          <p className={cn("text-[11px] font-medium", statusStyle.color)}>{statusStyle.label}</p>
+        </div>
       </div>
+      <button
+        type="button"
+        onClick={() => setSelected(null)}
+        aria-label="Close subagent panel"
+        className="text-foreground/50 hover:text-foreground hover:bg-foreground/8 mt-0.5 shrink-0 rounded-md p-1.5 transition-colors sm:p-1"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </div>
+  );
+
+  const description = (
+    <div className="border-foreground/8 shrink-0 border-b px-4 py-2.5">
+      <p className="text-foreground/60 text-xs leading-relaxed">{subagent.description}</p>
+    </div>
+  );
+
+  const body = (
+    <div className="flex-1 overflow-y-auto px-4 py-4">
+      {messages.length === 0 ? (
+        isRunning ? (
+          <div className="text-muted-foreground flex flex-col items-center gap-2 py-10 text-center">
+            <Loader2 className="text-primary h-8 w-8 animate-spin opacity-60" />
+            <p className="text-sm font-medium">Subagent is working…</p>
+            <p className="text-xs opacity-60">Messages will appear when the task progresses</p>
+          </div>
+        ) : (
+          <div className="text-muted-foreground flex flex-col items-center gap-2 py-10 text-center">
+            <MessageSquare className="h-8 w-8 opacity-30" />
+            <p className="text-sm">No messages captured</p>
+          </div>
+        )
+      ) : (
+        <div className="space-y-2">
+          {messages.map((msg, i) => (
+            <MessageRow key={`${msg.task_id}-${i}`} msg={msg} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop: side panel */}
+      <div className="bg-background border-border fixed top-0 right-0 z-50 hidden h-full w-[400px] flex-col border-l shadow-xl lg:flex">
+        {header}
+        {description}
+        {body}
+      </div>
+
+      {/* Mobile: bottom sheet */}
+      <div className="fixed inset-0 z-50 lg:hidden">
+        <div
+          className="bg-background/60 absolute inset-0 backdrop-blur-sm"
+          onClick={() => setSelected(null)}
+          aria-hidden
+        />
+        <div className="bg-background border-border absolute inset-x-0 bottom-0 flex max-h-[70vh] flex-col rounded-t-2xl border-t shadow-2xl">
+          <div className="flex justify-center pt-2 pb-1">
+            <span aria-hidden className="bg-foreground/20 h-1 w-10 rounded-full" />
+          </div>
+          {header}
+          {description}
+          {body}
+        </div>
+      </div>
+    </>
   );
 }

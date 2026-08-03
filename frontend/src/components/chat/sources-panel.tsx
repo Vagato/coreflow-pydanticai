@@ -129,60 +129,85 @@ export function SourcesPanel() {
   const ragSources = sources.filter((s) => s.type === "rag");
   const webSources = sources.filter((s) => s.type === "web");
 
-  return (
-    <div className="bg-background border-border fixed top-0 right-0 z-50 flex h-full w-[360px] flex-col border-l shadow-xl">
-      {/* Header */}
-      <div className="border-foreground/8 flex items-center justify-between border-b px-4 py-3">
-        <h2 className="text-foreground text-sm font-semibold">
-          Sources
-          <span className="text-foreground/45 ml-2 font-normal">({sources.length})</span>
-        </h2>
-        <button
-          type="button"
-          onClick={close}
-          aria-label="Close sources panel"
-          className="text-foreground/50 hover:text-foreground hover:bg-foreground/8 rounded-md p-1 transition-colors"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* Body */}
-      <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4">
-        {ragSources.length > 0 && (
-          <section className="space-y-2">
-            {ragSources.length > 0 && webSources.length > 0 && (
-              <h3 className="text-foreground/45 font-mono text-[10px] tracking-wider uppercase">
-                Knowledge base
-              </h3>
-            )}
-            {ragSources.map((s) => (
-              <RAGSourceRow
-                key={`rag-${s.index}`}
-                item={s}
-                highlighted={s.index === highlightedIndex}
-              />
-            ))}
-          </section>
-        )}
-
-        {webSources.length > 0 && (
-          <section className="space-y-2">
-            {ragSources.length > 0 && (
-              <h3 className="text-foreground/45 font-mono text-[10px] tracking-wider uppercase">
-                Web
-              </h3>
-            )}
-            {webSources.map((s) => (
-              <WebSourceRow
-                key={`web-${s.index}`}
-                item={s}
-                highlighted={s.index === highlightedIndex}
-              />
-            ))}
-          </section>
-        )}
-      </div>
+  const header = (
+    <div className="border-foreground/8 flex shrink-0 items-center justify-between border-b px-4 py-3">
+      <h2 className="text-foreground text-sm font-semibold">
+        Sources
+        <span className="text-foreground/45 ml-2 font-normal">({sources.length})</span>
+      </h2>
+      <button
+        type="button"
+        onClick={close}
+        aria-label="Close sources panel"
+        className="text-foreground/50 hover:text-foreground hover:bg-foreground/8 rounded-md p-1 transition-colors"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </div>
+  );
+
+  const body = (
+    <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4">
+      {ragSources.length > 0 && (
+        <section className="space-y-2">
+          {ragSources.length > 0 && webSources.length > 0 && (
+            <h3 className="text-foreground/45 font-mono text-[10px] tracking-wider uppercase">
+              Knowledge base
+            </h3>
+          )}
+          {ragSources.map((s) => (
+            <RAGSourceRow
+              key={`rag-${s.index}`}
+              item={s}
+              highlighted={s.index === highlightedIndex}
+            />
+          ))}
+        </section>
+      )}
+
+      {webSources.length > 0 && (
+        <section className="space-y-2">
+          {ragSources.length > 0 && (
+            <h3 className="text-foreground/45 font-mono text-[10px] tracking-wider uppercase">
+              Web
+            </h3>
+          )}
+          {webSources.map((s) => (
+            <WebSourceRow
+              key={`web-${s.index}`}
+              item={s}
+              highlighted={s.index === highlightedIndex}
+            />
+          ))}
+        </section>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop: side panel */}
+      <div className="bg-background border-border fixed top-0 right-0 z-50 hidden h-full w-[360px] flex-col border-l shadow-xl lg:flex">
+        {header}
+        {body}
+      </div>
+
+      {/* Mobile: bottom sheet with backdrop */}
+      <div className="fixed inset-0 z-50 lg:hidden">
+        <div
+          className="bg-background/60 absolute inset-0 backdrop-blur-sm"
+          onClick={close}
+          aria-hidden
+        />
+        <div className="bg-background border-border absolute inset-x-0 bottom-0 flex max-h-[70vh] flex-col rounded-t-2xl border-t shadow-2xl">
+          {/* Drag handle */}
+          <div className="flex justify-center pt-2 pb-1">
+            <span aria-hidden className="bg-foreground/20 h-1 w-10 rounded-full" />
+          </div>
+          {header}
+          {body}
+        </div>
+      </div>
+    </>
   );
 }

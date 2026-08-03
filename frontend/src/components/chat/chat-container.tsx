@@ -281,7 +281,7 @@ function ChatUI({
       <div className="mx-auto flex h-full max-w-5xl min-w-0 flex-1 flex-col">
         <div
           ref={scrollContainerRef}
-          className="flex-1 scrollbar-thin overflow-y-auto px-2 py-4 sm:px-4 sm:py-6"
+          className="flex-1 scrollbar-thin overflow-y-auto px-3 py-3 sm:px-4 sm:py-6"
         >
           {isLoadingConversation ? (
             <ConversationSkeleton />
@@ -296,12 +296,12 @@ function ChatUI({
           <div ref={messagesEndRef} />
         </div>{" "}
         {hasPlanData && currentTurnId && (
-          <div className="px-2 pb-2 sm:px-4 sm:pb-2">
+          <div className="px-2 pb-1 sm:px-4 sm:pb-2">
             <ResearchPanel turnId={currentTurnId} />
           </div>
         )}
         {pendingApproval && onResumeDecisions && (
-          <div className="px-2 pb-2 sm:px-4 sm:pb-2">
+          <div className="px-2 pb-1 sm:px-4 sm:pb-2">
             <ToolApprovalDialog
               actionRequests={pendingApproval.actionRequests}
               reviewConfigs={pendingApproval.reviewConfigs}
@@ -311,7 +311,7 @@ function ChatUI({
           </div>
         )}
         {pendingQuestions && pendingQuestions.length > 0 && onAnswerQuestions && (
-          <div className="px-2 pb-2 sm:px-4 sm:pb-2">
+          <div className="px-2 pb-1 sm:px-4 sm:pb-2">
             <QuestionPrompt
               questions={pendingQuestions}
               disabled={!isConnected}
@@ -319,7 +319,7 @@ function ChatUI({
             />
           </div>
         )}
-        <div className="px-2 pb-2 sm:px-4 sm:pb-4">
+        <div className="px-2 pb-1 sm:px-4 sm:pb-4">
           {queuedMessages && queuedMessages.length > 0 && onCancelQueued && (
             <PendingMessages messages={queuedMessages} onCancel={onCancelQueued} />
           )}
@@ -348,7 +348,7 @@ function ChatUI({
                       isConnected ? "bg-emerald-500" : "bg-destructive"
                     }`}
                   />
-                  {isConnected ? tc("live") : tc("offline")}
+                  <span className="hidden sm:inline">{isConnected ? tc("live") : tc("offline")}</span>
                 </span>
               </div>
               <div className="flex items-center gap-1">
@@ -360,7 +360,7 @@ function ChatUI({
               </div>
             </div>
           </div>
-          <p className="text-foreground/40 mt-2 text-center font-mono text-[10px] tracking-wider uppercase">
+          <p className="text-foreground/40 mt-1.5 text-center font-mono text-[9px] tracking-wider uppercase sm:mt-2 sm:text-[10px]">
             AI can make mistakes. Verify important information.
           </p>
         </div>

@@ -90,9 +90,10 @@ export function ChatControls({
       <PopoverTrigger asChild>
         <button
           type="button"
+          data-chat-settings-trigger
           aria-label="Chat controls"
           className={cn(
-            "border-foreground/10 bg-card hover:border-foreground/25 hover:bg-foreground/[0.04] inline-flex items-center gap-1.5 rounded-full border py-1 pr-2 pl-2.5 font-mono text-[11px] tracking-wider uppercase transition-colors",
+            "border-foreground/10 bg-card hover:border-foreground/25 hover:bg-foreground/[0.04] inline-flex items-center gap-1.5 rounded-full border py-1.5 pr-2.5 pl-3 font-mono text-[11px] tracking-wider uppercase transition-colors sm:py-1 sm:pr-2 sm:pl-2.5",
             hasOverrides ? "text-foreground" : "text-foreground/65",
           )}
         >
