@@ -278,7 +278,7 @@ function ChatUI({
   });
   return (
     <div className="flex h-full w-full">
-      <div className="mx-auto flex h-full max-w-5xl min-w-0 flex-1 flex-col">
+      <div className="mx-auto flex h-full min-w-0 flex-1 flex-col lg:max-w-5xl">
         <div
           ref={scrollContainerRef}
           className="flex-1 scrollbar-thin overflow-y-auto px-3 py-3 sm:px-4 sm:py-6"

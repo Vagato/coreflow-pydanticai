@@ -59,6 +59,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Allow dev server access from LAN devices (phone testing)
+  allowedDevOrigins: ["192.168.1.118", "192.168.1.104"],
   output: "standalone",
   pageExtensions: ["ts", "tsx", "mdx"],
 
