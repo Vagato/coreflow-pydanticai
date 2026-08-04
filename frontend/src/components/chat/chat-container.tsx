@@ -286,7 +286,7 @@ function ChatUI({
           {isLoadingConversation ? (
             <ConversationSkeleton />
           ) : messages.length === 0 ? (
-            <div className="flex h-full items-center">
+            <div className="flex h-full items-start sm:items-center">
               <ChatEmptyState onPick={(prompt) => sendMessage(prompt)} />
             </div>
           ) : (
