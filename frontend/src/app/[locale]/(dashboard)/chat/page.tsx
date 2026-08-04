@@ -7,7 +7,7 @@ export default function ChatPage() {
   // it sets currentConversationId AND loads messages atomically. Pre-setting the
   // id here would short-circuit that loader and leave the chat empty on refresh.
   return (
-    <div className="-mt-4 flex min-h-0 flex-1 sm:-mt-8 lg:mx-0 lg:mt-0">
+    <div className="flex min-h-0 flex-1 lg:mx-0">
       <ConversationSidebar />
       <div className="min-w-0 flex-1">
         <ChatContainer />
