@@ -169,6 +169,11 @@ class Settings(BaseSettings):
     HINDSIGHT_API_KEY: str = ""
     HINDSIGHT_ENABLED: bool = False
 
+    # === Kokoro TTS (self-hosted read-aloud service) ===
+    # Empty BASE_URL = feature disabled; the /api/v1/tts endpoints return 503.
+    KOKORO_TTS_BASE_URL: str = ""
+    KOKORO_TTS_API_KEY: str = ""
+
     ENABLE_DEEP_RESEARCH: bool = False
     DEEP_RESEARCH_MAX_TOKENS: int = 120_000
     DEEP_RESEARCH_COMPRESS_THRESHOLD: float = 0.8

@@ -64,6 +64,7 @@ dependencies = [
     "hindsight-pydantic-ai>=0.4.20",
     "aiogram>=3.17,<4.0",
     "slack-sdk>=3.35.0",
+    "httpx>=0.28.1",
 ]
 
 # PEP 735 dependency group — installed by `uv sync` / `uv sync --dev` and

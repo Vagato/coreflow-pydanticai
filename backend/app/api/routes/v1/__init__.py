@@ -12,6 +12,7 @@ from app.api.routes.v1 import me_mcp_connections
 from app.api.routes.v1 import agent
 from app.api.routes.v1 import rag
 from app.api.routes.v1 import files
+from app.api.routes.v1 import tts
 from app.api.routes.v1 import channels
 from app.api.routes.v1 import telegram_webhook
 from app.api.routes.v1 import slack_webhook
@@ -40,6 +41,8 @@ v1_router.include_router(agent.router, tags=["agent"])
 v1_router.include_router(rag.router, prefix="/rag", tags=["rag"])
 
 v1_router.include_router(files.router, tags=["files"])
+
+v1_router.include_router(tts.router, prefix="/tts", tags=["tts"])
 
 v1_router.include_router(
     admin_conversations.router, prefix="/admin/conversations", tags=["admin-conversations"]

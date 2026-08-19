@@ -6,6 +6,7 @@ import { ToolCallCard } from "./tool-call-card";
 import { MarkdownContent } from "./markdown-content";
 import { CopyButton } from "./copy-button";
 import { RatingButtons } from "./rating-buttons";
+import { ReadAloudButton } from "./read-aloud-button";
 import { useChatStore, useFilePreviewStore } from "@/stores";
 import { useSourcesPanelStore } from "@/stores/sources-panel-store";
 import { Bot, FileText, Globe, Paperclip, RefreshCw, User } from "lucide-react";
@@ -387,6 +388,7 @@ export function MessageItem({ message, groupPosition, onRegenerate }: MessageIte
                 }}
               />
             )}
+            {!isUser && <ReadAloudButton messageId={message.id} text={message.content} />}
           </div>
         )}
       </div>
