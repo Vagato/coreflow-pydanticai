@@ -17,9 +17,12 @@ interface TtsPlaybackState {
 let requestId = 0;
 let audio: HTMLAudioElement | null = null;
 let audioUrl: string | null = null;
+let abortController: AbortController | null = null;
 
 function release() {
   requestId += 1; // invalidates any in-flight fetch
+  abortController?.abort();
+  abortController = null;
   if (audio) {
     audio.pause();
     audio.src = "";
@@ -37,6 +40,8 @@ export const useTtsStore = create<TtsPlaybackState>((set) => ({
 
   play: async (messageId, text, errorMessage) => {
     release();
+    const controller = new AbortController();
+    abortController = controller;
     const id = requestId;
     set({ status: "loading", activeMessageId: messageId });
     try {
@@ -44,6 +49,7 @@ export const useTtsStore = create<TtsPlaybackState>((set) => ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
+        signal: controller.signal,
       });
       if (id !== requestId) return; // superseded by another play
 
