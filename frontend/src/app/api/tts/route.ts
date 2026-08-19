@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
     status: 200,
     headers: {
       "Content-Type": response.headers.get("content-type") || "audio/wav",
+      "X-Sample-Rate": response.headers.get("x-sample-rate") || "24000",
       "Cache-Control": "no-store",
     },
   });

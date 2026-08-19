@@ -59,6 +59,39 @@ async def synthesize(text: str, voice: str | None, speed: float | None) -> bytes
     return response.content
 
 
+async def synthesize_stream(text: str, voice: str | None, speed: float | None):
+    """Stream raw int16 PCM from the TTS service (async generator of bytes)."""
+    if not is_configured():
+        raise ExternalServiceError("Kokoro TTS is not configured")
+
+    payload = {
+        "text": text,
+        "voice": voice or "af_heart",
+        "speed": speed or 1.0,
+        "lang": "en-us",
+        "stream": True,
+        "format": "pcm",
+    }
+    client = httpx.AsyncClient(timeout=_TIMEOUT)
+    try:
+        async with client.stream(
+            "POST", f"{_base_url()}/v1/tts", json=payload, headers=_headers()
+        ) as response:
+            if response.status_code != 200:
+                body = (await response.aread()).decode(errors="replace")[:200]
+                if 400 <= response.status_code < 500:
+                    raise BadRequestError(f"Kokoro TTS rejected request: {body}")
+                raise ExternalServiceError(
+                    f"Kokoro TTS service error {response.status_code}: {body}"
+                )
+            async for chunk in response.aiter_bytes():
+                yield chunk
+    except httpx.HTTPError as exc:
+        raise ExternalServiceError(f"Kokoro TTS service unreachable: {exc}") from exc
+    finally:
+        await client.aclose()
+
+
 async def list_voices() -> list[dict]:
     """List available Kokoro voices (short TTL cache)."""
     global _voices_cache

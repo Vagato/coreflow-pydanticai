@@ -8,6 +8,7 @@ global exception handlers in ``app.api.exception_handlers``.
 from typing import Any
 
 from fastapi import APIRouter, Response
+from fastapi.responses import StreamingResponse
 
 from app.api.deps import CurrentUser
 from app.schemas.tts import TTSRequest, TTSVoicesResponse
@@ -18,7 +19,20 @@ router = APIRouter()
 
 @router.post("")
 async def synthesize(request: TTSRequest, user: CurrentUser) -> Response:
-    """Synthesize speech for the given text and return WAV audio."""
+    """Synthesize speech for the given text.
+
+    Returns raw int16 PCM (24 kHz) streamed chunk-by-chunk when
+    ``stream=True``, otherwise a whole-file WAV.
+    """
+    if request.stream:
+        return StreamingResponse(
+            tts_service.synthesize_stream(request.text, request.voice, request.speed),
+            media_type="audio/pcm",
+            headers={
+                "X-Sample-Rate": "24000",
+                "X-Content-Type-Options": "nosniff",
+            },
+        )
     audio = await tts_service.synthesize(request.text, request.voice, request.speed)
     return Response(
         content=audio,
