@@ -12,7 +12,7 @@ import httpx
 from app.core.config import settings
 from app.core.exceptions import BadRequestError, ExternalServiceError
 
-_TIMEOUT = httpx.Timeout(120.0, connect=10.0)
+_TIMEOUT = httpx.Timeout(300.0, connect=10.0)
 _VOICES_CACHE_TTL_SECS = 300.0
 
 _voices_cache: tuple[float, list[dict]] | None = None
