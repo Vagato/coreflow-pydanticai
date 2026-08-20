@@ -12,35 +12,65 @@ interface TtsPlaybackState {
   stop: () => void;
 }
 
-const SAMPLE_RATE = 24000;
-// Schedule incoming PCM in ~0.5s slices so playback starts as soon as the
-// first bytes arrive instead of waiting for a whole chunk.
-const SCHEDULE_SLICE = SAMPLE_RATE / 2;
+const MIME = "audio/mpeg";
 
 // Module-level playback state: only one message reads aloud at a time, and a
-// stale in-flight fetch can never start playback. Audio runs on an
-// AudioContext timeline — suspend()/resume() give pause/resume for free,
-// since the timeline freezes while suspended.
+// stale in-flight fetch can never start playback. The audio runs through a
+// single HTMLAudioElement; for streaming we append MP3 to a MediaSource so it
+// plays as it arrives, and fall back to buffering the whole response when
+// MediaSource is unavailable.
 let requestId = 0;
 let abortController: AbortController | null = null;
-let audioContext: AudioContext | null = null;
-let nextStartTime = 0;
-let scheduledCount = 0;
-let playedCount = 0;
+let audio: HTMLAudioElement | null = null;
+let mediaSource: MediaSource | null = null;
+let sourceBuffer: SourceBuffer | null = null;
+let pending: Uint8Array<ArrayBuffer>[] = [];
 let fetchDone = false;
+let objectUrl: string | null = null;
+
+function supportsMse(): boolean {
+  return typeof MediaSource !== "undefined" && MediaSource.isTypeSupported(MIME);
+}
 
 function release() {
   requestId += 1; // invalidates any in-flight fetch
   abortController?.abort();
   abortController = null;
-  if (audioContext) {
-    void audioContext.close().catch(() => {});
-    audioContext = null;
+  if (audio) {
+    audio.pause();
+    audio.onplaying = null;
+    audio.onended = null;
+    audio.src = "";
+    audio = null;
   }
-  nextStartTime = 0;
-  scheduledCount = 0;
-  playedCount = 0;
+  mediaSource = null;
+  sourceBuffer = null;
+  pending = [];
   fetchDone = false;
+  if (objectUrl) {
+    URL.revokeObjectURL(objectUrl);
+    objectUrl = null;
+  }
+}
+
+function appendPending(id: number) {
+  if (!sourceBuffer || sourceBuffer.updating) return;
+  const chunk = pending.shift();
+  if (chunk) {
+    try {
+      sourceBuffer.appendBuffer(chunk);
+    } catch {
+      // A quota/append error — the audio just ends early.
+    }
+    return;
+  }
+  if (fetchDone && mediaSource && mediaSource.readyState === "open") {
+    try {
+      mediaSource.endOfStream();
+    } catch {
+      // Already ended.
+    }
+  }
 }
 
 export const useTtsStore = create<TtsPlaybackState>((set) => ({
@@ -54,15 +84,40 @@ export const useTtsStore = create<TtsPlaybackState>((set) => ({
     const id = requestId;
     set({ status: "loading", activeMessageId: messageId });
 
-    // Create the AudioContext synchronously inside the click gesture so the
-    // autoplay policy lets us resume it even after awaiting the fetch.
-    const Ctx =
-      window.AudioContext ??
-      (window as unknown as { webkitAudioContext?: typeof AudioContext })
-        .webkitAudioContext;
-    const ctx = new Ctx({ sampleRate: SAMPLE_RATE });
-    audioContext = ctx;
-    void ctx.resume();
+    // Build the player synchronously inside the click gesture so autoplay
+    // policy lets playback start even after awaiting the fetch.
+    const el = new Audio();
+    audio = el;
+    el.preload = "auto";
+    el.onplaying = () => {
+      if (id === requestId) set({ status: "playing" });
+    };
+    el.onended = () => {
+      if (id !== requestId) return;
+      release();
+      set({ status: "idle", activeMessageId: null });
+    };
+
+    const useMse = supportsMse();
+    if (useMse) {
+      const ms = new MediaSource();
+      mediaSource = ms;
+      objectUrl = URL.createObjectURL(ms);
+      el.src = objectUrl;
+      ms.addEventListener(
+        "sourceopen",
+        () => {
+          if (id !== requestId) return;
+          sourceBuffer = ms.addSourceBuffer(MIME);
+          sourceBuffer.addEventListener("updateend", () => {
+            if (id === requestId) appendPending(id);
+          });
+          appendPending(id);
+        },
+        { once: true },
+      );
+    }
+    void el.play().catch(() => {}); // capture the user gesture
 
     try {
       const response = await fetch("/api/tts", {
@@ -85,61 +140,36 @@ export const useTtsStore = create<TtsPlaybackState>((set) => ({
       }
       if (!response.body) throw new Error(errorMessage);
 
-      const finishIfComplete = () => {
-        if (fetchDone && scheduledCount > 0 && playedCount >= scheduledCount) {
-          release();
-          set({ status: "idle", activeMessageId: null });
-        }
-      };
-
-      const schedulePcm = (pcm: Int16Array) => {
-        if (id !== requestId || pcm.length === 0) return;
-        const buffer = ctx.createBuffer(1, pcm.length, SAMPLE_RATE);
-        const channel = buffer.getChannelData(0);
-        for (let i = 0; i < pcm.length; i += 1) {
-          channel[i] = (pcm[i] ?? 0) / 32768;
-        }
-        const source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(ctx.destination);
-        const start = Math.max(nextStartTime, ctx.currentTime + 0.05);
-        source.start(start);
-        nextStartTime = start + buffer.duration;
-        scheduledCount += 1;
-        source.onended = () => {
-          if (id !== requestId) return;
-          playedCount += 1;
-          finishIfComplete();
-        };
-        if (useTtsStore.getState().status === "loading") {
-          set({ status: "playing" });
-        }
-      };
-
       const reader = response.body.getReader();
-      let carry = new Uint8Array(0);
+      const parts: Uint8Array<ArrayBuffer>[] = [];
+      let received = 0;
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
         if (!value) continue;
         if (id !== requestId) return;
-
-        const bytes = new Uint8Array(carry.length + value.length);
-        bytes.set(carry, 0);
-        bytes.set(value, carry.length);
-        const usable = bytes.length - (bytes.length % 2);
-        const pcm16 = new Int16Array(bytes.buffer.slice(0, usable));
-        carry = bytes.slice(usable);
-
-        for (let offset = 0; offset < pcm16.length; offset += SCHEDULE_SLICE) {
-          schedulePcm(pcm16.subarray(offset, Math.min(offset + SCHEDULE_SLICE, pcm16.length)));
+        const chunk = value as Uint8Array<ArrayBuffer>;
+        received += chunk.length;
+        if (useMse) {
+          pending.push(chunk);
+          appendPending(id);
+        } else {
+          parts.push(chunk);
         }
       }
 
       fetchDone = true;
       if (id !== requestId) return;
-      if (scheduledCount === 0) throw new Error(errorMessage); // empty stream
-      finishIfComplete();
+      if (received === 0) throw new Error(errorMessage); // empty stream
+
+      if (useMse) {
+        appendPending(id);
+      } else {
+        const blob = new Blob(parts, { type: MIME });
+        objectUrl = URL.createObjectURL(blob);
+        el.src = objectUrl;
+        await el.play();
+      }
     } catch (error) {
       if (id !== requestId) return;
       release();
@@ -149,15 +179,15 @@ export const useTtsStore = create<TtsPlaybackState>((set) => ({
   },
 
   pause: () => {
-    if (!audioContext) return;
-    void audioContext.suspend(); // freezes the timeline — resume continues here
+    if (!audio) return;
+    audio.pause();
     set({ status: "paused" });
   },
 
   resume: async (errorMessage) => {
-    if (!audioContext) return;
+    if (!audio) return;
     try {
-      await audioContext.resume();
+      await audio.play();
       set({ status: "playing" });
     } catch {
       release();

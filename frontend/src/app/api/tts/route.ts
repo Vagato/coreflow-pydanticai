@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8000";
 
 /**
- * Proxy POST /api/tts → FastAPI /api/v1/tts (Kokoro TTS).
+ * Proxy POST /api/tts → FastAPI /api/v1/tts (iFlytek TTS).
  * Returns the audio bytes verbatim — binary pass-through, no JSON parsing.
  */
 export async function POST(request: NextRequest) {
@@ -43,8 +43,7 @@ export async function POST(request: NextRequest) {
   return new NextResponse(response.body, {
     status: 200,
     headers: {
-      "Content-Type": response.headers.get("content-type") || "audio/wav",
-      "X-Sample-Rate": response.headers.get("x-sample-rate") || "24000",
+      "Content-Type": response.headers.get("content-type") || "audio/mpeg",
       "Cache-Control": "no-store",
     },
   });

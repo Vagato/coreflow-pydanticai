@@ -4,13 +4,13 @@ from pydantic import BaseModel, Field
 
 
 class TTSRequest(BaseModel):
-    """Speech synthesis request for the Kokoro TTS service."""
+    """Speech synthesis request for the iFlytek TTS service."""
 
-    text: str = Field(min_length=1, max_length=2000)
+    text: str = Field(min_length=1, max_length=8000)
     voice: str | None = None
-    speed: float | None = Field(default=None, ge=0.5, le=2.0)
-    # stream=True → raw int16 PCM streamed chunk-by-chunk (audio/pcm);
-    # otherwise a whole-file WAV response.
+    speed: int | None = Field(default=None, ge=0, le=100)
+    # stream=True → MP3 streamed chunk-by-chunk (audio/mpeg) so playback can
+    # start before the whole text is synthesized; otherwise a whole-file MP3.
     stream: bool = False
 
 

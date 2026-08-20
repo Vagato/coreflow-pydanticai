@@ -63,12 +63,13 @@ group is for and which are required vs optional.
 | `RESEND_API_KEY` | **required** | — | From resend.com |
 | `EMAIL_FROM` | **required** | — | Verified sender, e.g. `noreply@yourdomain.com` |
 
-## Kokoro TTS (read-aloud)
+## iFlytek TTS (read-aloud)
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `KOKORO_TTS_BASE_URL` | optional | `""` | Base URL of the self-hosted Kokoro TTS service (coreflow-tts repo). Empty disables `/api/v1/tts` (503). |
-| `KOKORO_TTS_API_KEY` | optional | `""` | Shared secret sent as `X-API-Key` to the TTS service. |
+| `IFLYTEK_TTS_APP_ID` | optional | `""` | iFlytek app ID (讯飞应用ID). Empty disables `/api/v1/tts` (503). |
+| `IFLYTEK_TTS_API_KEY` | optional | `""` | iFlytek API key (接口密钥). |
+| `IFLYTEK_TTS_API_SECRET` | optional | `""` | iFlytek API secret (接口密钥), used to sign requests. |
 
 ## Validation
 
