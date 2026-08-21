@@ -27,7 +27,7 @@ services:
       - ENVIRONMENT=production
       - POSTGRES_HOST=db
       - REDIS_HOST=redis
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1 --ws websockets-sansio
     networks:
       - backend-internal
     ports:
@@ -97,6 +97,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # BACKEND_URL is inlined into the server bundle at build time, so it must
+        # be passed as a build arg (the Dockerfile defaults to localhost:8000).
+        BACKEND_URL: http://app:8000
     container_name: coreflow_frontend
     environment:
       - NODE_ENV=production
@@ -118,7 +122,6 @@ services:
 networks:
   backend-internal:
     driver: bridge
-    internal: true
 
 volumes:
   media_data:
