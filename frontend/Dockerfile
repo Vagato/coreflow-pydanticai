@@ -46,7 +46,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN useradd --system --uid 1001 nextjs
+RUN useradd --system --uid 1001 --shell /bin/sh --create-home nextjs
 
 COPY --from=builder --chown=nextjs:bun /app/public ./public
 COPY --from=builder --chown=nextjs:bun /app/.next/standalone ./
